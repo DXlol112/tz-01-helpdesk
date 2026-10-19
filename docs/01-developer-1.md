@@ -4,19 +4,22 @@
 
 Каждую изменяющую сервер команду записывайте: время, участник, номер требования, команда, результат. Первый собирает записи обоих в `runbook.md`. Пароли и секреты в Git не добавляйте.
 
+Шаблоны `README.md`, `server-passport.md`, `runbook.md`, `access-matrix.md` и `provision.sh` уже находятся в корне. Редактируй существующие файлы; `scripts/` и `screenshots/` создаются ниже. Все команды терминала выполняй из корня репозитория, содержимое модулей вставляй в указанные файлы через `nano`.
+
 ## 1. Подготовить репозиторий и стенд
 
-Добавь напарника в GitHub → Settings → Collaborators. В своей ВМ:
+Добавь напарника в [репозиторий](https://github.com/DXlol112/tz-01-helpdesk) → Settings → Collaborators, чтобы он мог делать push. Репозиторий публичный: просмотр и клонирование доступны без авторизации. Используй уже открытый клон; перед переключением веток закоммить свою работу. В своей ВМ:
 
 ```bash
 sudo apt update
-sudo apt install -y git wget acl nano
-mkdir -p ~/projects ~/Downloads
-cd ~/projects
-git clone https://github.com/DXlol112/tz-01-helpdesk.git
-cd tz-01-helpdesk
-git switch -c part-1
-mkdir -p scripts screenshots
+sudo apt install -y git wget ca-certificates acl nano
+cd "$(git rev-parse --show-toplevel)"
+git status --short
+git fetch origin
+git switch part-1
+git pull --ff-only origin part-1
+git merge --no-edit origin/main
+mkdir -p scripts screenshots "$HOME/Downloads"
 
 HELPDESK_MATERIALS=https://algorthimization-course-vvodnoe.vercel.app/op05-operacionnye-sistemy-i-sredy/proekty/ekspluataciya-servera/materials
 wget -O ~/Downloads/helpdesk-stand.sh "$HELPDESK_MATERIALS/helpdesk-stand.sh"
@@ -24,7 +27,7 @@ wget -O ~/Downloads/helpdesk-acceptance.sh "$HELPDESK_MATERIALS/helpdesk-accepta
 sudo bash ~/Downloads/helpdesk-stand.sh
 ```
 
-Если клон уже есть, зайди в него, выполни `git switch main` и `git pull --ff-only`, затем создай свою ветку. Если `part-1` уже существует, вместо `git switch -c part-1` выполни `git switch part-1`.
+`part-1` уже существует. Если `git status --short` показывает изменения, сначала сохрани их коммитом. При конфликте слияния исправь указанные Git файлы, выполни `git add` для них и `git merge --continue`; затем продолжай. Стенд запускается только в учебной ВМ.
 
 ## 2. Сделать паспорт сервера до изменений
 
@@ -102,6 +105,10 @@ git push -u origin part-1
 Создай `scripts/40-sudoers.sh` с тем же заголовком. Добавь команды ниже: временный редактор позволяет установить правило через `visudo` без ручной правки при каждом запуске.
 
 ```bash
+nano scripts/40-sudoers.sh
+```
+
+```bash
 HELPDESK_EDITOR=$(mktemp /tmp/helpdesk-editor.XXXXXX)
 trap 'rm -f -- "$HELPDESK_EDITOR"' EXIT
 cat > "$HELPDESK_EDITOR" <<'EDITOR'
@@ -117,7 +124,7 @@ visudo -c
 
 Разрешены только три команды ctl от `helpdesk`. Программы и конфигурация должны быть недоступны разработчикам на запись — это обеспечивает часть второго.
 
-## 5. Создать общий provision.sh
+## 5. Заполнить существующий provision.sh
 
 ```bash
 nano provision.sh
@@ -131,6 +138,9 @@ set -euo pipefail
 [ "$(id -u)" = 0 ] || { echo 'Запуск: sudo bash provision.sh'; exit 1; }
 cd -- "$(dirname -- "$0")"
 test -d /tmp/helpdesk-release-2.4.1
+for module in 10-accounts 20-layout 30-access 40-sudoers 50-service; do
+  test -f "scripts/$module.sh" || { echo "Нет scripts/$module.sh" >&2; exit 1; }
+done
 for module in 10-accounts 20-layout 30-access 40-sudoers 50-service; do
   bash "scripts/$module.sh"
 done
@@ -157,7 +167,7 @@ git push
 
 ```bash
 git fetch origin
-git switch -c codex/check-1 origin/main
+git switch -c "codex/check-1-$(date +%Y%m%d-%H%M%S)" origin/main
 git merge --no-edit origin/part-1
 git merge --no-edit origin/part-2
 sudo bash ~/Downloads/helpdesk-stand.sh
@@ -191,7 +201,7 @@ git push
 
 ```bash
 git switch main
-git pull --ff-only
+git pull --ff-only origin main
 sudo bash ~/Downloads/helpdesk-stand.sh
 sudo bash provision.sh
 sudo bash ~/Downloads/helpdesk-acceptance.sh

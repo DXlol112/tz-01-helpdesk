@@ -2,17 +2,20 @@
 
 Выполняй шаги по порядку в своей ВМ Ubuntu 24.04 со снимком VirtualBox. Первый разработчик параллельно делает [пользователей, sudo и provision.sh](01-developer-1.md). Свои команды, ошибки и результаты передавай ему для `runbook.md`.
 
+`access-matrix.md` и остальные шаблоны уже лежат в корне проекта. `scripts/` и `screenshots/` создаются ниже. Все команды терминала выполняй из корня репозитория; блоки содержимого модулей вставляй в соответствующие файлы через `nano`.
+
 ## 1. Подготовить стенд и ветку
 
 ```bash
 sudo apt update
-sudo apt install -y git wget acl nano
-mkdir -p ~/projects ~/Downloads
-cd ~/projects
-git clone https://github.com/DXlol112/tz-01-helpdesk.git
-cd tz-01-helpdesk
-git switch -c part-2
-mkdir -p scripts screenshots
+sudo apt install -y git wget ca-certificates acl nano
+cd "$(git rev-parse --show-toplevel)"
+git status --short
+git fetch origin
+git switch part-2
+git pull --ff-only origin part-2
+git merge --no-edit origin/main
+mkdir -p scripts screenshots "$HOME/Downloads"
 
 HELPDESK_MATERIALS=https://algorthimization-course-vvodnoe.vercel.app/op05-operacionnye-sistemy-i-sredy/proekty/ekspluataciya-servera/materials
 wget -O ~/Downloads/helpdesk-stand.sh "$HELPDESK_MATERIALS/helpdesk-stand.sh"
@@ -23,7 +26,7 @@ less /tmp/helpdesk-release-2.4.1/bin/helpdesk-api
 less /tmp/helpdesk-release-2.4.1/bin/helpdesk-ctl
 ```
 
-Если клон уже есть, используй его. Если `part-2` уже существует, вместо `git switch -c part-2` выполни `git switch part-2`. Не выводи содержимое `secrets.env`. Пока первый готовит пользователей, изучи релиз и напиши следующие модули.
+Используй уже открытый клон; `part-2` уже существует. Перед Git-командами закоммить свои изменения. При конфликте исправь файлы, выполни `git add` для них и `git merge --continue`. [Репозиторий](https://github.com/DXlol112/tz-01-helpdesk) публичный; для push прими приглашение в Collaborators. Содержимое `secrets.env` не выводи. Пока первый готовит пользователей, изучи релиз и напиши модули.
 
 ## 2. Получить пользователей от первого
 
@@ -33,12 +36,17 @@ less /tmp/helpdesk-release-2.4.1/bin/helpdesk-ctl
 git fetch origin
 git show origin/part-1:scripts/10-accounts.sh > /tmp/helpdesk-accounts.sh
 less /tmp/helpdesk-accounts.sh
+bash -n /tmp/helpdesk-accounts.sh
 sudo bash /tmp/helpdesk-accounts.sh
 ```
 
-Временную копию не добавляй в свой PR.
+Выполняй этот шаг после push первого: пока файла нет в `origin/part-1`, продолжать нельзя. Временную копию не добавляй в свой PR.
 
 ## 3. Создать scripts/20-layout.sh
+
+```bash
+nano scripts/20-layout.sh
+```
 
 Начинай каждый модуль с:
 
@@ -71,6 +79,10 @@ fi
 Релиз из `/tmp` пока сохраняется. Его удалит общий скрипт после успешного запуска.
 
 ## 4. Создать scripts/30-access.sh
+
+```bash
+nano scripts/30-access.sh
+```
 
 После стандартного заголовка запиши:
 
@@ -116,7 +128,7 @@ for account in ivanov petrova smirnova; do
 done
 sudo -u nobody test ! -r /var/log/helpdesk/api.log
 sudo -u nobody test ! -r /etc/helpdesk/helpdesk.conf
-sudo stat -c '%A %a %U:%G %n' /etc/helpdesk/* /var/lib/helpdesk /var/log/helpdesk/api.log /srv/helpdesk/static
+sudo stat -c '%A %a %U:%G %n' /etc/helpdesk/helpdesk.conf /etc/helpdesk/secrets.env /var/lib/helpdesk /var/log/helpdesk/api.log /srv/helpdesk/static
 sudo getfacl -p /etc/helpdesk /etc/helpdesk/helpdesk.conf /srv/helpdesk/static
 nano access-matrix.md
 ```
@@ -146,6 +158,10 @@ pgrep -af '[h]elpdesk-2[.]3/bin/helpdesk-api'
 Ожидается отказ из-за работающей 2.3. Если причина другая, разбери фактическое сообщение. Передай первому команду, результат и исправление; сохрани настоящий снимок как `screenshots/01-start-failure.png`. Права ради запуска не расширяй.
 
 ## 7. Создать scripts/50-service.sh
+
+```bash
+nano scripts/50-service.sh
+```
 
 После стандартного заголовка добавь:
 
@@ -185,7 +201,7 @@ git push -u origin part-2
 
 ```bash
 git fetch origin
-git switch -c codex/check-2 origin/main
+git switch -c "codex/check-2-$(date +%Y%m%d-%H%M%S)" origin/main
 git merge --no-edit origin/part-1
 git merge --no-edit origin/part-2
 sudo bash ~/Downloads/helpdesk-stand.sh
@@ -216,11 +232,20 @@ grep -Fx 'Result: 25 of 25' /tmp/helpdesk-acceptance-2.txt
 
 Сохрани снимок вывода как `screenshots/02-acceptance.png`. Если были ручные исправления, внеси их в модули и повтори стенд → provision → приёмку. Сверь фактическую матрицу после финального прогона.
 
-Вернись в свою ветку, добавь снимок и обновлённую матрицу, затем отправь коммит в свой PR. Первый забирает записи для общего журнала. После взаимного ревью слейте PR первого, затем второго. Обнови `main` и повтори чистый прогон:
+Вернись в свою ветку и отправь результаты в PR:
+
+```bash
+git switch part-2
+git add access-matrix.md screenshots/02-acceptance.png
+git commit -m "docs: record final access matrix and acceptance"
+git push
+```
+
+Первый забирает записи для общего журнала. После взаимного ревью слейте PR первого, затем второго. Обнови `main` и повтори чистый прогон:
 
 ```bash
 git switch main
-git pull --ff-only
+git pull --ff-only origin main
 sudo bash ~/Downloads/helpdesk-stand.sh
 sudo bash provision.sh
 sudo bash ~/Downloads/helpdesk-acceptance.sh
