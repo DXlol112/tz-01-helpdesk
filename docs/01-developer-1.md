@@ -15,7 +15,7 @@ mkdir -p ~/projects ~/Downloads
 cd ~/projects
 git clone https://github.com/DXlol112/tz-01-helpdesk.git
 cd tz-01-helpdesk
-git switch -c codex/part-1
+git switch -c part-1
 mkdir -p scripts screenshots
 
 HELPDESK_MATERIALS=https://algorthimization-course-vvodnoe.vercel.app/op05-operacionnye-sistemy-i-sredy/proekty/ekspluataciya-servera/materials
@@ -24,7 +24,7 @@ wget -O ~/Downloads/helpdesk-acceptance.sh "$HELPDESK_MATERIALS/helpdesk-accepta
 sudo bash ~/Downloads/helpdesk-stand.sh
 ```
 
-Если клон уже есть, зайди в него, выполни `git switch main` и `git pull --ff-only`, затем создай свою ветку.
+Если клон уже есть, зайди в него, выполни `git switch main` и `git pull --ff-only`, затем создай свою ветку. Если `part-1` уже существует, вместо `git switch -c part-1` выполни `git switch part-1`.
 
 ## 2. Сделать паспорт сервера до изменений
 
@@ -92,7 +92,7 @@ sudo passwd -S smirnova
 
 git add scripts/10-accounts.sh server-passport.md
 git commit -m "feat: add helpdesk accounts and groups"
-git push -u origin codex/part-1
+git push -u origin part-1
 ```
 
 Проверь: UID службы меньше 1000, home `/var/lib/helpdesk`, shell `nologin`, у сотрудников пароль со статусом `P`, никто из них не в группе `sudo`. Сообщи второму: модуль пользователей доступен.
@@ -149,7 +149,7 @@ git commit -m "feat: add restricted sudo and provisioning entry point"
 git push
 ```
 
-На GitHub открой PR `codex/part-1` → `main`. Укажи требования 2.1.1–2.1.4 и зависимость от PR второго.
+На GitHub открой PR `part-1` → `main`. Укажи требования 2.1.1–2.1.4 и зависимость от PR второго.
 
 ## 6. Проверить обе части до слияния
 
@@ -158,8 +158,8 @@ git push
 ```bash
 git fetch origin
 git switch -c codex/check-1 origin/main
-git merge --no-edit origin/codex/part-1
-git merge --no-edit origin/codex/part-2
+git merge --no-edit origin/part-1
+git merge --no-edit origin/part-2
 sudo bash ~/Downloads/helpdesk-stand.sh
 sudo bash provision.sh
 set -o pipefail
@@ -173,7 +173,7 @@ grep -Fx 'Result: 25 of 25' /tmp/helpdesk-acceptance.txt
 ## 7. Оформить сдачу и слить PR
 
 ```bash
-git switch codex/part-1
+git switch part-1
 cp /tmp/helpdesk-acceptance.txt acceptance.txt
 nano runbook.md
 nano README.md

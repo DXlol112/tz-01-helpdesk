@@ -11,7 +11,7 @@ mkdir -p ~/projects ~/Downloads
 cd ~/projects
 git clone https://github.com/DXlol112/tz-01-helpdesk.git
 cd tz-01-helpdesk
-git switch -c codex/part-2
+git switch -c part-2
 mkdir -p scripts screenshots
 
 HELPDESK_MATERIALS=https://algorthimization-course-vvodnoe.vercel.app/op05-operacionnye-sistemy-i-sredy/proekty/ekspluataciya-servera/materials
@@ -23,7 +23,7 @@ less /tmp/helpdesk-release-2.4.1/bin/helpdesk-api
 less /tmp/helpdesk-release-2.4.1/bin/helpdesk-ctl
 ```
 
-Если клон уже есть, используй его. Не выводи содержимое `secrets.env`. Пока первый готовит пользователей, изучи релиз и напиши следующие модули.
+Если клон уже есть, используй его. Если `part-2` уже существует, вместо `git switch -c part-2` выполни `git switch part-2`. Не выводи содержимое `secrets.env`. Пока первый готовит пользователей, изучи релиз и напиши следующие модули.
 
 ## 2. Получить пользователей от первого
 
@@ -31,7 +31,7 @@ less /tmp/helpdesk-release-2.4.1/bin/helpdesk-ctl
 
 ```bash
 git fetch origin
-git show origin/codex/part-1:scripts/10-accounts.sh > /tmp/helpdesk-accounts.sh
+git show origin/part-1:scripts/10-accounts.sh > /tmp/helpdesk-accounts.sh
 less /tmp/helpdesk-accounts.sh
 sudo bash /tmp/helpdesk-accounts.sh
 ```
@@ -174,10 +174,10 @@ bash -n scripts/50-service.sh
 sudo bash scripts/50-service.sh
 git add scripts/20-layout.sh scripts/30-access.sh scripts/50-service.sh access-matrix.md screenshots/01-start-failure.png
 git commit -m "feat: install helpdesk files, permissions and service"
-git push -u origin codex/part-2
+git push -u origin part-2
 ```
 
-Открой на GitHub PR `codex/part-2` → `main`; укажи требования 2.2–2.4 и зависимость от пользователей первого.
+Открой на GitHub PR `part-2` → `main`; укажи требования 2.2–2.4 и зависимость от пользователей первого.
 
 ## 8. Проверить PR первого и общий проект
 
@@ -186,8 +186,8 @@ git push -u origin codex/part-2
 ```bash
 git fetch origin
 git switch -c codex/check-2 origin/main
-git merge --no-edit origin/codex/part-1
-git merge --no-edit origin/codex/part-2
+git merge --no-edit origin/part-1
+git merge --no-edit origin/part-2
 sudo bash ~/Downloads/helpdesk-stand.sh
 sudo bash provision.sh
 sudo visudo -c
@@ -203,7 +203,7 @@ sudo -u petrova sudo -n -u root /usr/bin/id
 sudo -u smirnova sudo -n -u helpdesk /usr/local/bin/helpdesk-ctl status
 ```
 
-Последние три команды должны завершиться отказом именно от sudo. Повтори разрешения и запреты для обоих разработчиков, проверь UID/home/shell службы и пароли сотрудников. Оставь ревью в PR первого; исправления своей части отправляй в `codex/part-2`.
+Последние три команды должны завершиться отказом именно от sudo. Повтори разрешения и запреты для обоих разработчиков, проверь UID/home/shell службы и пароли сотрудников. Оставь ревью в PR первого; исправления своей части отправляй в `part-2`.
 
 ## 9. Пройти приёмку и завершить работу
 
