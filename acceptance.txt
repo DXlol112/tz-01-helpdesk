@@ -1,0 +1,30 @@
+Accounts
+  OK    helpdesk: system account without login shell
+  OK    ivanov and petrova are in helpdesk-dev
+  OK    smirnova is in helpdesk-support, not in helpdesk-dev
+  OK    nobody of the team has sudo group
+Layout
+  OK    programs in /usr/local/bin
+  OK    configuration in /etc/helpdesk
+  OK    database in /var/lib/helpdesk
+  OK    static files in /srv/helpdesk/static
+  OK    release copy removed from /tmp
+Access
+  OK    developers read helpdesk.conf
+  OK    developers cannot read secrets.env
+  OK    support cannot read secrets.env
+  OK    support reads api.log
+  OK    developers read api.log
+  OK    support cannot change api.log
+  OK    other users cannot read logs and configuration
+  OK    only helpdesk enters /var/lib/helpdesk
+  OK    developers publish static files, group is kept
+  OK    helpdesk reads static files
+Service
+  OK    version 2.3 is stopped
+  OK    helpdesk-api 2.4.1 runs as helpdesk
+  OK    service umask closes group write and other users
+  OK    developers run helpdesk-ctl as helpdesk without password
+  OK    developers cannot run other commands as helpdesk or root
+  OK    sudoers rules for helpdesk are valid, mode 440
+Result: 25 of 25
