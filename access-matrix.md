@@ -21,7 +21,22 @@
 | `static/test.txt` | helpdesk | `sudo -u helpdesk test ! -w /srv/helpdesk/static/test.txt && echo 'OK: служба не пишет'` | Запись запрещена | `OK: служба не пишет` |
 | `static/test.txt` | petrova | `sudo -u petrova rm /srv/helpdesk/static/test.txt` | Удаление | Без ошибки |
 
-
-
 ## Правило sudo
+
+По `sudo -l -U ivanov` и `sudo -l -U petrova` обоим разрешено:
+
+```text
+(helpdesk) NOPASSWD: /usr/local/bin/helpdesk-ctl start, /usr/local/bin/helpdesk-ctl stop, /usr/local/bin/helpdesk-ctl status
+```
+
+`sudo visudo -c`: `/etc/sudoers` и `/etc/sudoers.d/helpdesk` успешно обработаны.
+
+| Команда проверки | Ожидали | Получили |
+| --- | --- | --- |
+| `sudo -u ivanov sudo -n -u helpdesk /usr/local/bin/helpdesk-ctl status` | Статус без пароля | PID `34450`, пользователь `helpdesk`, `/bin/bash /usr/local/bin/helpdesk-api` |
+| `sudo -u petrova sudo -n -u helpdesk /usr/local/bin/helpdesk-ctl status` | Статус без пароля | Тот же процесс, без запроса пароля |
+| `sudo -u ivanov sudo -n -u helpdesk /bin/bash -c true` | Отказ | `sudo: требуется указать пароль` |
+| `sudo -u petrova sudo -n -u root /usr/bin/id` | Отказ | `sudo: требуется указать пароль` |
+| `sudo -u smirnova sudo -n -u helpdesk /usr/local/bin/helpdesk-ctl status` | Отказ | `sudo: требуется указать пароль` |
+
 
