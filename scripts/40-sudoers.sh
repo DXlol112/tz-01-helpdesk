@@ -5,6 +5,8 @@ HELPDESK_EDITOR=$(mktemp /tmp/helpdesk-editor.XXXXXX)
 trap 'rm -f -- "$HELPDESK_EDITOR"' EXIT
 cat > "$HELPDESK_EDITOR" <<'EDITOR'
 #!/bin/sh
+# visudo может передать -- перед именем файла.
+if [ "${1:-}" = -- ]; then shift; fi
 printf '%s\n' '%helpdesk-dev ALL=(helpdesk) NOPASSWD: /usr/local/bin/helpdesk-ctl start, /usr/local/bin/helpdesk-ctl stop, /usr/local/bin/helpdesk-ctl status' > "$1"
 EDITOR
 chmod 0700 "$HELPDESK_EDITOR"
